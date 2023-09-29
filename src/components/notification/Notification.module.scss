@@ -1,0 +1,19 @@
+.notification {
+  padding: 10px;
+  border-radius: 12px;
+  background-color: green;
+
+  position: fixed;
+  top: 0;
+  right: 0;
+
+  .close {
+    width: 12px;
+    height: 12px;
+    background-color: black;
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+}
