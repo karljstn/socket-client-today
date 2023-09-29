@@ -24,7 +24,6 @@ const Home = () => {
   };
 
   const onMessage = (message) => {
-    console.log("message received", message);
     // ❌ la variable message n'est pas un tableau
     // setMessages(message);
 
@@ -46,7 +45,7 @@ const Home = () => {
   };
 
   const onConnectionError = (err) => {
-    console.log("err", err);
+    console.log("test");
     localStorage.clear("username");
     localStorage.clear("sessionID");
     localStorage.setItem("error", 200);
@@ -86,8 +85,6 @@ const Home = () => {
   useEffect(() => {
     const sessionID = localStorage.getItem("sessionID");
 
-    console.log(sessionID);
-
     // session is already defined
     if (sessionID) {
       socket.auth = { sessionID };
@@ -106,20 +103,20 @@ const Home = () => {
     socket.on("session", onSession);
     socket.on("message", onMessage);
     socket.on("messages", getMessagesAtInit);
+    socket.on("disconnect", onConnectionError);
     socket.on("connect_error", onConnectionError);
 
     return () => {
-      socket.disconnect();
       socket.off("error", onError);
       socket.off("session", onSession);
       socket.off("message", onMessage);
       socket.off("messages", getMessagesAtInit);
       socket.off("connect_error", onConnectionError);
+      socket.disconnect();
     };
   }, []);
 
   useEffect(() => {
-    console.log("messages new value", messages);
     scrollToBottom();
   }, [messages]);
 
