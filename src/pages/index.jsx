@@ -8,12 +8,22 @@ import Input from "@/components/input/Input";
 import Commands from "@/components/commands/Commands";
 import s from "@/styles/index.module.scss";
 import Notification from "@/components/notification/Notification";
+import Message from "@/components/message/Message";
+import { gsap } from "gsap";
+// import video from "@/smash.mp4";
 
 const Home = () => {
   const [selectedUser, setSelectedUser] = useState();
   const [users, setUsers] = useState([]);
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState();
+  const [disconnectionSound, setDisconnectionSound] = useState();
+
+  const [userConnected, setUserConnected] = useState("");
+
+  const videoRef = useRef();
+  const challengerRef = useRef();
+
   const viewerRef = useRef();
   const { push } = useRouter();
 
@@ -24,6 +34,8 @@ const Home = () => {
     localStorage.setItem("sessionID", sessionID);
     // save the ID of the user
     socket.userID = userID;
+
+    localStorage.clear("error");
   };
 
   const onMessage = (message) => {
@@ -55,6 +67,15 @@ const Home = () => {
     }
 
     setUsers((currentUsers) => [...currentUsers, _user]);
+
+    challengerRef.current.style.display = "block";
+    videoRef.current.currentTime = 0;
+    videoRef.current.play();
+    setUserConnected(_user.username);
+
+    setTimeout(() => {
+      challengerRef.current.style.display = "none";
+    }, 3000);
   };
 
   const onUserDisconnect = (_userID) => {
@@ -63,6 +84,9 @@ const Home = () => {
     );
     console.log(filteredArray);
     setUsers(filteredArray);
+
+    disconnectionSound.currentTime = 0;
+    disconnectionSound.play();
   };
 
   const onConnectionError = (err) => {
@@ -110,17 +134,12 @@ const Home = () => {
   };
 
   const onPrivateMessage = ({ content, from, to, username }) => {
-    console.log(content, from, to, username);
     // check from which user the message came from
     const userMessagingIndex = users.findIndex(
       (_user) => _user.userID === from
     );
 
-    console.log(userMessagingIndex);
-
     const userMessaging = users.find((_user) => _user.userID === from);
-
-    console.log(userMessaging);
 
     if (!userMessaging) return;
 
@@ -131,9 +150,9 @@ const Home = () => {
       username: username,
     });
 
-    //  if (userMessaging.userID !== selectedUser?.userID) {
-    //    userMessaging.hasNewMessages = true;
-    //  }
+    if (userMessaging.userID !== selectedUser?.userID) {
+      userMessaging.hasNewMessages = true;
+    }
 
     const _users = [...users];
     _users[userMessagingIndex] = userMessaging;
@@ -156,15 +175,19 @@ const Home = () => {
   useEffect(() => {
     const sessionID = localStorage.getItem("sessionID");
 
+    setDisconnectionSound(new Audio("/assets/disconnect.mp3"));
+
     // session is already defined
     if (sessionID) {
       socket.auth = { sessionID };
       socket.connect();
+
       // first time connecting and has already visited login page
     } else if (localStorage.getItem("username")) {
       const username = localStorage.getItem("username");
       socket.auth = { username };
       socket.connect();
+
       //   // redirect to login page
     } else {
       push("/login");
@@ -194,18 +217,17 @@ const Home = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
-
-  useEffect(() => {
-    console.log(selectedUser);
-  }, [selectedUser]);
+  }, [messages, selectedUser]);
 
   return (
     <div>
-      <h1 className="title">Hello</h1>
-
+      <div ref={challengerRef} className={s.challenger}>
+        <video ref={videoRef} autoPlay src={"/smash.mp4"}></video>
+        <h1>{userConnected}</h1>
+      </div>
       <UserList
         users={users}
+        setUsers={setUsers}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
       />
@@ -223,16 +245,22 @@ const Home = () => {
         {selectedUser
           ? selectedUser.messages.map((message, key) => {
               return (
-                <div key={key}>
-                  {message.username} : {message.content}
-                </div>
+                <Message
+                  key={key}
+                  username={message.username}
+                  content={message.content}
+                  fromSelf={message.from === socket.userID}
+                />
               );
             })
           : messages.map((message, key) => {
               return (
-                <div key={key}>
-                  {message.username} : {message.content}
-                </div>
+                <Message
+                  key={key}
+                  username={message.username}
+                  content={message.content}
+                  fromSelf={message.from === socket.userID}
+                />
               );
             })}
       </div>

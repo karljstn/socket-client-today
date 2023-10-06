@@ -1,8 +1,24 @@
 .input {
+  width: calc(555px - 80px);
   position: fixed;
-  bottom: 10%;
   left: 0;
   right: 0;
+  bottom: 5%;
   margin: auto;
-  max-width: 300px;
+  color: white;
+  padding: 16px;
+  outline: initial;
+  border: none;
+  border-bottom: solid 1px white;
+  background-color: transparent;
+
+  &::placeholder {
+    color: white;
+    opacity: 1; /* Firefox */
+  }
+
+  &::-ms-input-placeholder {
+    /* Edge 12 -18 */
+    color: white;
+  }
 }

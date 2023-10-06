@@ -1,5 +1,11 @@
-// @import "./index.scss";
+@import url("https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap");
 
+* {
+  font-family: "Ubuntu", "sans-serif";
+  box-sizing: border-box;
+}
 body {
-  // background-color: pink;
+  margin: 0;
+  background-color: black;
+  color: white;
 }
